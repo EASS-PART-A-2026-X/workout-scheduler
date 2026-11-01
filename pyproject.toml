@@ -1,0 +1,24 @@
+[project]
+name = "workout-scheduler"
+version = "0.1.0"
+description = "FastAPI service for scheduling Pilates and other workouts"
+readme = "README.md"
+authors = [
+    { name = "adi tavakoli", email = "aditavakoli02@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.162.0",
+]
+
+[project.scripts]
+workout-scheduler = "workout_scheduler:main"
+
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
