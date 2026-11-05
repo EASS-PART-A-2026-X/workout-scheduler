@@ -69,3 +69,9 @@ def test_delete_workout(client):
     response = client.delete("/workouts/1")
     assert response.status_code == 204
     assert client.get("/workouts/1").status_code == 404
+    
+
+def test_health(client):
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"} 

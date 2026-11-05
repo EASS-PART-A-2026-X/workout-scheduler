@@ -7,6 +7,11 @@ app = FastAPI(title="Workout Scheduler")
 repo = WorkoutRepository()
 
 
+@app.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 @app.get("/workouts")
 def list_workouts() -> list[Workout]:
     return repo.list_all()
@@ -37,3 +42,4 @@ def update_workout(workout_id: int, data: WorkoutCreate) -> Workout:
 def delete_workout(workout_id: int) -> None:
     if not repo.delete(workout_id):
         raise HTTPException(status_code=404, detail="Workout not found")
+    
