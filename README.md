@@ -1,7 +1,7 @@
 # Workout Scheduler
 
-A small REST API for scheduling workouts (for example, Pilates classes).
-Built with **FastAPI** and **Pydantic** for EX1. Data is stored in memory, so it resets when the server restarts.
+A REST API for scheduling workouts (for example, Pilates classes).
+Built with **FastAPI**, **Pydantic** and **SQLModel**. Workouts are stored in a **SQLite** database, so they survive a restart.
 
 ## Features
 - Create, list, view, update and delete workouts (CRUD)
@@ -10,6 +10,7 @@ Built with **FastAPI** and **Pydantic** for EX1. Data is stored in memory, so it
   - `duration_minutes` must be between 1 and 300
   - `intensity` must be `low`, `medium` or `high`
   - `notes` is optional (max 200 characters)
+- Persistent storage in SQLite (`data/app.db`)
 
 ## Endpoints
 
@@ -18,7 +19,7 @@ Built with **FastAPI** and **Pydantic** for EX1. Data is stored in memory, so it
 | GET | `/workouts` | List all workouts | 200 |
 | GET | `/workouts/{id}` | Get one workout | 200 (404 if not found) |
 | POST | `/workouts` | Create a workout | 201 (422 if invalid) |
-| PUT | `/workouts/{id}` | Update a workout | 200 (404 if not found) |
+| PUT | `/workouts/{id}` | Update a workout | 200 (404 if not found, 422 if invalid) |
 | DELETE | `/workouts/{id}` | Delete a workout | 204 (404 if not found) |
 | GET | `/health` | Health check | 200 |
 
@@ -37,52 +38,69 @@ Built with **FastAPI** and **Pydantic** for EX1. Data is stored in memory, so it
 ## Requirements
 - Python 3.12
 - [uv](https://docs.astral.sh/uv/)
+- Docker (optional, for running in a container)
 
-## Install
+## Setup
 ```bash
-git clone https://github.com/adit265/workout-scheduler.git
+git clone https://github.com/EASS-PART-A-2026-X/workout-scheduler.git
 cd workout-scheduler
 uv sync
 ```
 
-## Run
+## Configuration
+| Setting | Default | Meaning |
+|---|---|---|
+| `DATABASE_URL` | `sqlite:///./data/app.db` | Where the database is stored |
+
+See `.env.example`. The `data/` folder is created automatically on startup and is not committed to Git.
+
+## Run locally
 ```bash
 uv run fastapi dev src/workout_scheduler/main.py
 ```
-Then open http://127.0.0.1:8000/docs to try the API in your browser.
+Open http://127.0.0.1:8000/docs to try the API.
+
+**Restart check:** create a workout, stop the server (Ctrl+C), start it again, and `GET /workouts` still returns it.
 
 ## Test
 ```bash
 uv run pytest -v
 ```
+The tests use a separate in-memory database, so they never touch `data/app.db`. `test_workout_survives_restart` checks that data is still there after a restart.
 
 ## Run with Docker
 ```bash
 docker build -t workout-scheduler .
-docker run --rm -p 8000:8000 workout-scheduler
+docker run -d --name backend -p 8000:8000 -v workout-data:/app/data workout-scheduler
 ```
-Then open http://127.0.0.1:8000/health — it should return `{"status": "ok"}`.
+Open http://127.0.0.1:8000/health — it should return `{"status": "ok"}`.
 
-## Try the API with examples.http (bonus)
+The named volume `workout-data` keeps the database when the container is replaced:
+```bash
+docker rm -f backend
+docker run -d --name backend -p 8000:8000 -v workout-data:/app/data workout-scheduler
+```
+The container runs as a non-root user (`appuser`, uid 10001).
+
+## Try the API with examples.http
 `examples.http` contains ready-made requests for every endpoint, including invalid input (422) and a missing workout (404).
 Install the **REST Client** extension in VS Code, start the API, open `examples.http`, and click **Send Request** above each request.
 
 ## Project structure
 ```
 src/workout_scheduler/
-├── models.py       # Pydantic models (what a workout looks like + validation)
-├── repository.py   # In-memory storage (CRUD on a dictionary)
+├── models.py       # SQLModel/Pydantic models and validation
+├── db.py           # Database connection (DATABASE_URL) and table creation
+├── repository.py   # CRUD operations on the database
 └── main.py         # FastAPI app and endpoints
 tests/
-└── test_workouts.py  # API tests with pytest
+└── test_workouts.py  # API tests with pytest (including a restart test)
 Dockerfile          # Container image for the API
+.env.example        # Example configuration
 examples.http       # Ready-made requests (REST Client)
 ```
 
-## AI Assistance
-I used Claude (Anthropic) as a tutor during this exercise:
-- It helped me set up my environment (WSL, uv, Python 3.12, Git).
-- It explained FastAPI, Pydantic and pytest concepts step by step.
-- It suggested code for the models, repository, endpoints and tests. I typed the code myself, ran it, and checked every result in the browser and with pytest.
-- It helped me debug a naming conflict between `main.py` and the example `main()` function created by `uv init`.
-- It helped me write the Dockerfile and the examples.http file, and fix Docker permissions in WSL. I built and ran the container myself and checked `/health`.
+## AI use
+- **Tool:** Claude (Anthropic), used as a tutor.
+- **Help received:** environment setup (WSL, uv, Python 3.12, Git, Docker), explanations of FastAPI, Pydantic, SQLModel and pytest, suggested code for the models, database, repository, endpoints, tests and Dockerfile, and help debugging a `main` naming conflict and Docker permissions in WSL.
+- **Checks I ran:** `uv run pytest -v` (11 passed); every endpoint by hand in `/docs` (201, 200, 204, 404, 422); a workout still exists after restarting the server locally, and after replacing the Docker container with the same volume; `docker exec backend id` shows `appuser`.
