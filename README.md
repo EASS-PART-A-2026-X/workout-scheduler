@@ -20,6 +20,7 @@ Built with **FastAPI** and **Pydantic** for EX1. Data is stored in memory, so it
 | POST | `/workouts` | Create a workout | 201 (422 if invalid) |
 | PUT | `/workouts/{id}` | Update a workout | 200 (404 if not found) |
 | DELETE | `/workouts/{id}` | Delete a workout | 204 (404 if not found) |
+| GET | `/health` | Health check | 200 |
 
 ### Example workout
 ```json
@@ -55,6 +56,17 @@ Then open http://127.0.0.1:8000/docs to try the API in your browser.
 uv run pytest -v
 ```
 
+## Run with Docker
+```bash
+docker build -t workout-scheduler .
+docker run --rm -p 8000:8000 workout-scheduler
+```
+Then open http://127.0.0.1:8000/health — it should return `{"status": "ok"}`.
+
+## Try the API with examples.http (bonus)
+`examples.http` contains ready-made requests for every endpoint, including invalid input (422) and a missing workout (404).
+Install the **REST Client** extension in VS Code, start the API, open `examples.http`, and click **Send Request** above each request.
+
 ## Project structure
 ```
 src/workout_scheduler/
@@ -63,6 +75,8 @@ src/workout_scheduler/
 └── main.py         # FastAPI app and endpoints
 tests/
 └── test_workouts.py  # API tests with pytest
+Dockerfile          # Container image for the API
+examples.http       # Ready-made requests (REST Client)
 ```
 
 ## AI Assistance
@@ -71,3 +85,4 @@ I used Claude (Anthropic) as a tutor during this exercise:
 - It explained FastAPI, Pydantic and pytest concepts step by step.
 - It suggested code for the models, repository, endpoints and tests. I typed the code myself, ran it, and checked every result in the browser and with pytest.
 - It helped me debug a naming conflict between `main.py` and the example `main()` function created by `uv init`.
+- It helped me write the Dockerfile and the examples.http file, and fix Docker permissions in WSL. I built and ran the container myself and checked `/health`.
