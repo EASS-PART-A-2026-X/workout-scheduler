@@ -1,0 +1,66 @@
+@baseUrl = http://127.0.0.1:8000
+
+### Health check
+GET {{baseUrl}}/health
+
+### Create a Pilates workout (expect 201)
+POST {{baseUrl}}/workouts
+Content-Type: application/json
+
+{
+  "sport": "Pilates",
+  "date": "2026-11-05",
+  "start_time": "18:30",
+  "duration_minutes": 45,
+  "intensity": "medium",
+  "notes": "Reformer class"
+}
+
+### Create a second workout (expect 201)
+POST {{baseUrl}}/workouts
+Content-Type: application/json
+
+{
+  "sport": "Pilates",
+  "date": "2026-11-07",
+  "start_time": "09:00",
+  "duration_minutes": 60,
+  "intensity": "high",
+  "notes": "Mat Pilates"
+}
+
+### List all workouts (expect 200)
+GET {{baseUrl}}/workouts
+
+### Get workout 1 (expect 200)
+GET {{baseUrl}}/workouts/1
+
+### Update workout 1 (expect 200)
+PUT {{baseUrl}}/workouts/1
+Content-Type: application/json
+
+{
+  "sport": "Pilates",
+  "date": "2026-11-06",
+  "start_time": "18:30",
+  "duration_minutes": 45,
+  "intensity": "high",
+  "notes": "Moved to Friday"
+}
+
+### Delete workout 1 (expect 204)
+DELETE {{baseUrl}}/workouts/1
+
+### Workout that doesn't exist (expect 404)
+GET {{baseUrl}}/workouts/99
+
+### Invalid duration (expect 422)
+POST {{baseUrl}}/workouts
+Content-Type: application/json
+
+{
+  "sport": "Pilates",
+  "date": "2026-11-05",
+  "start_time": "18:30",
+  "duration_minutes": 500
+}
