@@ -11,8 +11,6 @@ dependencies = [
     "fastapi[standard]>=0.162.0",
 ]
 
-[project.scripts]
-workout-scheduler = "workout_scheduler:main"
 
 [build-system]
 requires = ["uv_build>=0.13.5,<0.14.0"]
