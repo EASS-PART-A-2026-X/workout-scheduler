@@ -9,6 +9,9 @@ COPY src ./src
 
 RUN uv sync --frozen --no-dev
 
+RUN useradd --uid 10001 appuser && mkdir -p /app/data && chown appuser /app/data
+USER appuser
+
 EXPOSE 8000
 
 CMD ["/app/.venv/bin/fastapi", "run", "src/workout_scheduler/main.py", "--port", "8000"]

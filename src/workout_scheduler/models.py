@@ -1,7 +1,7 @@
 import datetime as dt
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from sqlmodel import Field, SQLModel
 
 
 class Intensity(str, Enum):
@@ -10,7 +10,7 @@ class Intensity(str, Enum):
     high = "high"
 
 
-class WorkoutCreate(BaseModel):
+class WorkoutBase(SQLModel):
     sport: str = Field(min_length=1, max_length=50)
     date: dt.date
     start_time: dt.time
@@ -19,5 +19,13 @@ class WorkoutCreate(BaseModel):
     notes: str | None = Field(default=None, max_length=200)
 
 
-class Workout(WorkoutCreate):
+class Workout(WorkoutBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+
+class WorkoutCreate(WorkoutBase):
+    pass
+
+
+class WorkoutPublic(WorkoutBase):
     id: int
