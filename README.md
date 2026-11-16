@@ -104,3 +104,11 @@ examples.http       # Ready-made requests (REST Client)
 - **Tool:** Claude (Anthropic), used as a tutor.
 - **Help received:** environment setup (WSL, uv, Python 3.12, Git, Docker), explanations of FastAPI, Pydantic, SQLModel and pytest, suggested code for the models, database, repository, endpoints, tests and Dockerfile, and help debugging a `main` naming conflict and Docker permissions in WSL.
 - **Checks I ran:** `uv run pytest -v` (11 passed); every endpoint by hand in `/docs` (201, 200, 204, 404, 422); a workout still exists after restarting the server locally, and after replacing the Docker container with the same volume; `docker exec backend id` shows `appuser`.
+
+## Open-source evidence
+
+| Student | Repository | License | Stars (checked) | PR | Summary | Merge evidence |
+|---|---|---|---|---|---|---|
+| adi tavakoli (@adit265) | [tldr-pages/tldr](https://github.com/tldr-pages/tldr) | [LICENSE.md](https://github.com/tldr-pages/tldr/blob/main/LICENSE.md) | 64.2K (16 Nov 2026) | [#25280](https://github.com/tldr-pages/tldr/pull/25280) | Added a Hebrew translation of the `mkdir` page | Pending (open) |
+| adi tavakoli (@adit265) | [tldr-pages/tldr](https://github.com/tldr-pages/tldr) | [LICENSE.md](https://github.com/tldr-pages/tldr/blob/main/LICENSE.md) | 64.2K (16 Nov 2026) | [#25281](https://github.com/tldr-pages/tldr/pull/25281) | Added a Hebrew translation of the `rmdir` page | Pending (open) |
+| adi tavakoli (@adit265) | [tldr-pages/tldr](https://github.com/tldr-pages/tldr) | [LICENSE.md](https://github.com/tldr-pages/tldr/blob/main/LICENSE.md) | 64.2K (16 Nov 2026) | [#25282](https://github.com/tldr-pages/tldr/pull/25282) | Added a Hebrew translation of the `clear` page | Pending (open) |
