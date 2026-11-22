@@ -86,6 +86,65 @@ The container runs as a non-root user (`appuser`, uid 10001).
 `examples.http` contains ready-made requests for every endpoint, including invalid input (422) and a missing workout (404).
 Install the **REST Client** extension in VS Code, start the API, open `examples.http`, and click **Send Request** above each request.
 
+## Frontend (EX2)
+
+A browser page built with **Streamlit** in `frontend/`. It lists, adds, edits and deletes workouts through the backend API.
+
+```
+Browser -> Streamlit frontend (port 8501) -> FastAPI backend (port 8000) -> SQLite
+```
+
+All HTTP calls live in `frontend/api.py`; the page (`frontend/streamlit_app.py`) never talks to the database directly.
+
+### Run the frontend
+Use two terminals.
+
+Terminal 1, the backend (from the repository root):
+```bash
+uv run fastapi dev src/workout_scheduler/main.py
+```
+
+Terminal 2, the frontend:
+```bash
+cd frontend
+uv sync
+uv run streamlit run streamlit_app.py
+```
+Open http://127.0.0.1:8501.
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `BACKEND_URL` | `http://localhost:8000` | Where the frontend sends its requests |
+
+**WSL tip:** if the Windows browser cannot open the page, start the backend with `--host 0.0.0.0` and the frontend with `--server.address 0.0.0.0`, then open `http://<output of hostname -I>:8501`. Stop both servers when you are done.
+
+### Test the frontend
+From `frontend/`:
+```bash
+uv run pytest -v
+```
+These tests use Streamlit's `AppTest` with a fake backend (`respx`), so no server is needed. They cover the empty list, a stopped backend, a 422 shown in words, a lost reply after a save, a missing workout, the exact JSON sent on create, and that the page only reaches the backend through `api.py`.
+
+One real-browser flow (add, reload, delete) needs both servers running:
+```bash
+uv run playwright install --with-deps chromium   # once
+uv run pytest e2e --base-url http://127.0.0.1:8501
+```
+
+Style checks:
+```bash
+uv run ruff check . && uv run ruff format --check .
+```
+
+### Manual checks
+| Situation | What the page shows |
+|---|---|
+| No workouts yet | "No workouts yet. Add one in the 'Add a workout' tab." |
+| Empty sport | "Give the workout a sport before saving." (no request is sent) |
+| Duration over 300 (from the API) | "Please fix: duration_minutes: Input should be less than or equal to 300" |
+| Backend stopped | "Cannot reach the backend at http://localhost:8000. Start it (uv run fastapi dev src/workout_scheduler/main.py) and reload the page." |
+| After restarting the backend | Reloading the page shows the list again |
+
 ## Project structure
 ```
 src/workout_scheduler/
@@ -98,12 +157,18 @@ tests/
 Dockerfile          # Container image for the API
 .env.example        # Example configuration
 examples.http       # Ready-made requests (REST Client)
+frontend/
+├── api.py            # Every HTTP call to the backend
+├── streamlit_app.py  # The Streamlit page
+├── tests/            # AppTest tests and the import-boundary test
+└── e2e/              # One real-browser test (Playwright)
 ```
 
 ## AI use
 - **Tool:** Claude (Anthropic), used as a tutor.
 - **Help received:** environment setup (WSL, uv, Python 3.12, Git, Docker), explanations of FastAPI, Pydantic, SQLModel and pytest, suggested code for the models, database, repository, endpoints, tests and Dockerfile, and help debugging a `main` naming conflict and Docker permissions in WSL.
 - **Checks I ran:** `uv run pytest -v` (11 passed); every endpoint by hand in `/docs` (201, 200, 204, 404, 422); a workout still exists after restarting the server locally, and after replacing the Docker container with the same volume; `docker exec backend id` shows `appuser`.
+- **EX2 frontend:** Claude suggested the Streamlit page, `api.py`, the tests and the README sections, following the course's Lecture 4 and 5 patterns. I ran the page in my browser and checked add, edit (persists after reload), delete, and the message shown when the backend is stopped; I ran `uv run pytest` in `frontend/`.
 
 ## Open-source evidence
 
