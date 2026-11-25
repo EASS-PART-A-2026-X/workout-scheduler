@@ -112,3 +112,26 @@ def test_missing_workout_on_save_says_reload(backend):
     at = start_app(backend, [PILATES])
     at.button(key="save-1").click().run()
     assert "no longer exists" in at.error[0].value
+
+
+def test_list_shows_intensity_icon(backend):
+    at = start_app(backend, [PILATES])
+    assert at.expander[0].label.startswith("🟡")  # medium intensity
+
+
+def test_summary_cards(backend):
+    at = start_app(backend, [PILATES])
+    cards = {metric.label: metric.value for metric in at.metric}
+    assert cards["Total workouts"] == "1"
+    assert "Minutes this week" in cards
+    assert "Next workout" in cards
+
+
+def test_summary_cards_without_workouts(backend):
+    at = start_app(backend, [])
+    cards = {metric.label: metric.value for metric in at.metric}
+    assert cards == {
+        "Total workouts": "0",
+        "Minutes this week": "0",
+        "Next workout": "None yet",
+    }

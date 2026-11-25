@@ -17,4 +17,4 @@ def imported_modules(path: Path) -> set[str]:
 
 
 def test_ui_reaches_the_backend_only_through_api_py():
-    assert imported_modules(UI) <= {"api", "streamlit", "string", "datetime"}
+    assert imported_modules(UI) <= {"api", "stats", "streamlit", "string", "datetime"}

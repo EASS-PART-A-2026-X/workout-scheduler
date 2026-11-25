@@ -4,11 +4,14 @@ import string
 import streamlit as st
 
 import api
+import stats
 
-st.set_page_config(page_title="Workout Scheduler")
-st.title("Workout Scheduler")
+st.set_page_config(page_title="Workout Scheduler", page_icon="🧘", layout="wide")
+st.title("🧘 Workout Scheduler")
+st.caption("Plan your Pilates week: add, edit and track your workouts.")
 
 INTENSITIES = ["low", "medium", "high"]
+INTENSITY_ICONS = {"low": "🟢", "medium": "🟡", "high": "🔴"}
 
 # Every ASCII punctuation mark, prefixed with a backslash.
 MARKDOWN_ESCAPES = str.maketrans({c: "\\" + c for c in string.punctuation})
@@ -57,6 +60,7 @@ def workout_fields(key: str, workout: api.Workout | None = None) -> dict:
         "Intensity",
         INTENSITIES,
         INTENSITIES.index(w.get("intensity", "medium")),
+        format_func=lambda level: f"{INTENSITY_ICONS[level]} {level}",
         key=f"{key}-intensity",
     )
     notes = st.text_input(
@@ -82,6 +86,19 @@ except api.BackendError as exc:
     st.error(str(exc))
     st.stop()  # nothing else on this page works without the backend
 
+now = dt.datetime.now()
+upcoming = stats.next_workout(workouts, now)
+total_col, week_col, next_col = st.columns(3)
+total_col.metric("Total workouts", len(workouts), border=True)
+week_col.metric(
+    "Minutes this week", stats.minutes_this_week(workouts, now.date()), border=True
+)
+next_col.metric(
+    "Next workout",
+    stats.starts_at(upcoming).strftime("%a %d %b, %H:%M") if upcoming else "None yet",
+    border=True,
+)
+
 browse, add = st.tabs(["Workouts", "Add a workout"])
 
 with browse:
@@ -90,8 +107,9 @@ with browse:
     for workout in sorted(workouts, key=lambda w: (w["date"], w["start_time"])):
         wid = workout["id"]
         sport = plain(workout["sport"])  # user text: show it, never interpret it
+        icon = INTENSITY_ICONS.get(workout["intensity"], "")
         label = (
-            f"{sport}: {workout['date']} at {workout['start_time'][:5]} "
+            f"{icon} {sport}: {workout['date']} at {workout['start_time'][:5]} "
             f"({workout['duration_minutes']} min, {workout['intensity']})"
         )
         with st.expander(label), st.form(f"edit-{wid}"):

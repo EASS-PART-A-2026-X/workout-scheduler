@@ -96,6 +96,8 @@ Browser -> Streamlit frontend (port 8501) -> FastAPI backend (port 8000) -> SQLi
 
 All HTTP calls live in `frontend/api.py`; the page (`frontend/streamlit_app.py`) never talks to the database directly.
 
+At the top, three summary cards show the total number of workouts, the planned minutes this week (Monday to Sunday) and the next upcoming workout. Each workout shows its intensity as a color: 🟢 low, 🟡 medium, 🔴 high. The numbers come from `frontend/stats.py`, which has its own tests.
+
 ### Run the frontend
 Use two terminals.
 
@@ -160,6 +162,7 @@ examples.http       # Ready-made requests (REST Client)
 frontend/
 ├── api.py            # Every HTTP call to the backend
 ├── streamlit_app.py  # The Streamlit page
+├── stats.py          # Summary numbers for the cards (pure functions)
 ├── tests/            # AppTest tests and the import-boundary test
 └── e2e/              # One real-browser test (Playwright)
 ```
