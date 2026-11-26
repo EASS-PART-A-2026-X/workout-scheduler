@@ -54,8 +54,8 @@ def _request(method: str, path: str, **kwargs) -> httpx.Response:
     except NOT_SENT as exc:
         raise BackendUnavailable(
             f"Cannot reach the backend at {BACKEND_URL}. "
-            "Start it (uv run fastapi dev src/workout_scheduler/main.py) "
-            "and reload the page."
+            "Start it (uv run fastapi dev src/workout_scheduler/main.py "
+            "in backend/) and reload the page."
         ) from exc
     except httpx.TransportError as exc:
         if method == "GET":

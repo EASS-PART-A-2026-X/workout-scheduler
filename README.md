@@ -41,9 +41,11 @@ Built with **FastAPI**, **Pydantic** and **SQLModel**. Workouts are stored in a 
 - Docker (optional, for running in a container)
 
 ## Setup
+The repository has two parts: `backend/` (the API) and `frontend/` (the browser page, see [Frontend (EX2)](#frontend-ex2)).
+
 ```bash
 git clone https://github.com/EASS-PART-A-2026-X/workout-scheduler.git
-cd workout-scheduler
+cd workout-scheduler/backend
 uv sync
 ```
 
@@ -52,9 +54,10 @@ uv sync
 |---|---|---|
 | `DATABASE_URL` | `sqlite:///./data/app.db` | Where the database is stored |
 
-See `.env.example`. The `data/` folder is created automatically on startup and is not committed to Git.
+See `backend/.env.example`. The `data/` folder (inside `backend/`) is created automatically on startup and is not committed to Git.
 
 ## Run locally
+From `backend/`:
 ```bash
 uv run fastapi dev src/workout_scheduler/main.py
 ```
@@ -63,14 +66,16 @@ Open http://127.0.0.1:8000/docs to try the API.
 **Restart check:** create a workout, stop the server (Ctrl+C), start it again, and `GET /workouts` still returns it.
 
 ## Test
+From `backend/`:
 ```bash
 uv run pytest -v
 ```
 The tests use a separate in-memory database, so they never touch `data/app.db`. `test_workout_survives_restart` checks that data is still there after a restart.
 
 ## Run with Docker
+From the repository root:
 ```bash
-docker build -t workout-scheduler .
+docker build -t workout-scheduler backend
 docker run -d --name backend -p 8000:8000 -v workout-data:/app/data workout-scheduler
 ```
 Open http://127.0.0.1:8000/health — it should return `{"status": "ok"}`.
@@ -83,8 +88,8 @@ docker run -d --name backend -p 8000:8000 -v workout-data:/app/data workout-sche
 The container runs as a non-root user (`appuser`, uid 10001).
 
 ## Try the API with examples.http
-`examples.http` contains ready-made requests for every endpoint, including invalid input (422) and a missing workout (404).
-Install the **REST Client** extension in VS Code, start the API, open `examples.http`, and click **Send Request** above each request.
+`backend/examples.http` contains ready-made requests for every endpoint, including invalid input (422) and a missing workout (404).
+Install the **REST Client** extension in VS Code, start the API, open `backend/examples.http`, and click **Send Request** above each request.
 
 ## Frontend (EX2)
 
@@ -101,8 +106,9 @@ At the top, three summary cards show the total number of workouts, the planned m
 ### Run the frontend
 Use two terminals.
 
-Terminal 1, the backend (from the repository root):
+Terminal 1, the backend:
 ```bash
+cd backend
 uv run fastapi dev src/workout_scheduler/main.py
 ```
 
@@ -144,21 +150,22 @@ uv run ruff check . && uv run ruff format --check .
 | No workouts yet | "No workouts yet. Add one in the 'Add a workout' tab." |
 | Empty sport | "Give the workout a sport before saving." (no request is sent) |
 | Duration over 300 (from the API) | "Please fix: duration_minutes: Input should be less than or equal to 300" |
-| Backend stopped | "Cannot reach the backend at http://localhost:8000. Start it (uv run fastapi dev src/workout_scheduler/main.py) and reload the page." |
+| Backend stopped | "Cannot reach the backend at http://localhost:8000. Start it (uv run fastapi dev src/workout_scheduler/main.py in backend/) and reload the page." |
 | After restarting the backend | Reloading the page shows the list again |
 
 ## Project structure
 ```
-src/workout_scheduler/
-├── models.py       # SQLModel/Pydantic models and validation
-├── db.py           # Database connection (DATABASE_URL) and table creation
-├── repository.py   # CRUD operations on the database
-└── main.py         # FastAPI app and endpoints
-tests/
-└── test_workouts.py  # API tests with pytest (including a restart test)
-Dockerfile          # Container image for the API
-.env.example        # Example configuration
-examples.http       # Ready-made requests (REST Client)
+backend/
+├── src/workout_scheduler/
+│   ├── models.py       # SQLModel/Pydantic models and validation
+│   ├── db.py           # Database connection (DATABASE_URL) and table creation
+│   ├── repository.py   # CRUD operations on the database
+│   └── main.py         # FastAPI app and endpoints
+├── tests/
+│   └── test_workouts.py  # API tests with pytest (including a restart test)
+├── Dockerfile          # Container image for the API
+├── .env.example        # Example configuration
+└── examples.http       # Ready-made requests (REST Client)
 frontend/
 ├── api.py            # Every HTTP call to the backend
 ├── streamlit_app.py  # The Streamlit page
